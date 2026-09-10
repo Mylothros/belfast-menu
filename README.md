@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ΜΠΕΛΦΑΣΤ URBAN PUB — Catalogue
 
-## Getting Started
+Beautiful catalogue site for **ΜΠΕΛΦΑΣΤ Urban Pub** — Βασιλέως Κωνσταντίνου 26, Ξάνθη.
 
-First, run the development server:
+Recreated faithfully from the original PDF catalogue into a modern, responsive Next.js site.
+
+**Live:** `bun dev` → http://localhost:3000
+
+## Stack
+
+- Next.js 16 (App Router, Turbopack)
+- React 19
+- Tailwind CSS v4
+- TypeScript
+- Bun
+
+## Catalogue
+
+Covers the full PDF — **~144 items** across:
+
+- **Beverages** (19) — Schweppes, Fanta, Coca-Cola, Red Bull, Three Cents, Fever Tree, Bundaberg, Gia Giamas, Arizona …
+- **Beers** (14) — Carlsberg, Marmita, Άλφα, Μάμος, Βεργίνα, Guinness, Kaiser, Fischer, Νύμφη, Fix …
+- **Craft Beers** (11) — Marmita, Utopia, Sourmena Brew, ΤΑΩΣ, Strange Brew …
+- **Whiskeys** (38) — Irish / Scotch / Bourbon / Premium (Tullamore, Jameson, Bushmills, Chivas, Talisker, Lagavulin, Macallan …)
+- **Rum** (14) — Havana, Diplomatico, Zacapa …
+- **Gin** (16) — Beefeater, Hendrick's, Roku, Monkey 47 …
+- **Vodka** (7) — Absolut, Grey Goose, Belvedere …
+- **Cognac** (4) — Hennessy, Metaxa …
+- **Cocktails** (15) — Negroni, Old Fashioned, Margarita, Mojito, Zombie …
+
+Design tokens match the PDF:
+
+- Cream `#F5EFE0` / paper `#FAF6EB`
+- Forest green `#163F1A`
+- Serif headings (Playfair Display / Cormorant Garamond) + DM Sans body
+- Faithful pill logo in the hero, thin-line catalogue header/footer, dotted menu rows
+
+## Development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
+# install
+bun install
+
+# dev (Turbopack)
 bun dev
+
+# build
+bun run build
+
+# start production
+bun start
+
+# lint
+bun run lint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Project structure
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+src/app/
+  layout.tsx   — fonts (Playfair, Cormorant, DM Sans) + metadata
+  page.tsx     — full menu data + hero + sticky nav + search + sections
+  globals.css  — Tailwind + design tokens
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deploy
 
-## Learn More
+Push to `main` — Vercel auto-deploys. Or:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+vercel --prod
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Address
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+> ΜΠΕΛΦΑΣΤ URBAN PUB  
+> Βασιλέως Κωνσταντίνου 26, Ξάνθη
