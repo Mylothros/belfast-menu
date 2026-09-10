@@ -72,8 +72,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[var(--cream)]">
-      {/* HERO — all green at top, dots restored + rounded bottom */}
-      <section className="relative bg-[var(--green)] flex flex-col items-center justify-center px-6 py-16 sm:py-20 lg:py-24 rounded-b-[28px] sm:rounded-b-[40px] overflow-hidden">
+      {/* HERO — all green at top, dots, square edges (no bottom rounding) */}
+      <section className="relative bg-[var(--green)] flex flex-col items-center justify-center px-6 py-16 sm:py-20 lg:py-24">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 opacity-[0.12]"
