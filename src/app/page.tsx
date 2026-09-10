@@ -65,8 +65,16 @@ export default function Home() {
     return () => observer.disconnect();
   }, []);
 
+  // Auto-scroll the horizontal nav so the active pill stays visible
+  useEffect(() => {
+    const navEl = document.querySelector(`[data-nav-id="${activeId}"]`);
+    navEl?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  }, [activeId]);
+
   const scrollTo = (id: string) => {
     setActiveId(id);
+    // also nudge nav immediately so click feels instant even before observer fires
+    document.querySelector(`[data-nav-id="${id}"]`)?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
@@ -128,10 +136,11 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 pb-3 overflow-x-auto scrollbar-hide -mx-1 px-1">
+          <div className="flex items-center gap-1.5 pb-3 overflow-x-auto scrollbar-hide -mx-1 px-1 scroll-smooth">
             {navItems.map((item) => (
               <button
                 key={item.id}
+                data-nav-id={item.id}
                 onClick={() => scrollTo(item.id)}
                 className={`whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[11px] font-semibold tracking-[0.08em] transition-all ${
                   activeId === item.id
