@@ -51,19 +51,43 @@ export default function Home() {
 
   const totalItems = useMemo(() => menu.reduce((acc, c) => acc + c.count, 0), [menu]);
 
+  // Best-practice scrollspy: rAF-throttled, direction-aware, handles fast scroll
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) if (e.isIntersecting) setActiveId(e.target.id);
-      },
-      { rootMargin: "-40% 0px -50% 0px", threshold: 0.1 }
-    );
-    navItems.forEach(({ id }) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-    return () => observer.disconnect();
-  }, []);
+    const ids = navItems.map((n) => n.id);
+    const headerOffset = 140;
+    let ticking = false;
+
+    const getActive = () => {
+      const scrollPos = window.scrollY + headerOffset;
+      // When filtering, only consider visible sections; otherwise all
+      const visibleIds = filtered.length ? filtered.map((c) => c.id) : ids;
+      let current = visibleIds[0] || ids[0];
+      for (const id of visibleIds) {
+        const el = document.getElementById(id);
+        if (el && el.offsetTop <= scrollPos) current = id;
+        else break; // ids are in DOM order; once we pass scrollPos, stop
+      }
+      // Edge: at bottom, keep last
+      return current;
+    };
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(() => {
+        setActiveId(getActive());
+        ticking = false;
+      });
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    onScroll();
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [filtered]);
 
   // Auto-scroll the horizontal nav so the active pill stays visible
   useEffect(() => {
