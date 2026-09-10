@@ -32,6 +32,15 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# payload / sqlite
+*.db
+*.db-journal
+belfast.db
+payload-types.ts
+generated-schema.graphql
+migrations/
 
 # vercel
 .vercel

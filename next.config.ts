@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
+import { withPayload } from "@payloadcms/next/withPayload";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Payload + sqlite needs Node runtime, not edge
+  experimental: {
+    // keep turpopack as is
+  },
 };
 
-export default nextConfig;
+export default withPayload(nextConfig);

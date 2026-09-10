@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Cormorant_Garamond, DM_Sans } from "next/font/google";
+import { Playfair_Display, Cormorant_Garamond, DM_Sans, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -21,14 +21,26 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
+const jetbrains = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+});
+
+const space = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "ΜΠΕΛΦΑΣΤ URBAN PUB — Catalogue",
+  title: "ΜΠΕΛΦΑΣΤ URBAN PUB — Catalogue • Futuristic",
   description:
-    "ΜΠΕΛΦΑΣΤ Urban Pub — Βασιλέως Κωνσταντίνου 26, Ξάνθη. Explore our full catalogue: beverages, beers, whiskeys, rum, gin, vodka, cognac & cocktails.",
+    "ΜΠΕΛΦΑΣΤ Urban Pub — Βασιλέως Κωνσταντίνου 26, Ξάνθη. Futuristic catalogue, fully editable via Payload CMS (sqlite locally, graceful Vercel fallback).",
   openGraph: {
     title: "ΜΠΕΛΦΑΣΤ URBAN PUB — Catalogue",
     description:
-      "Full product catalogue for ΜΠΕΛΦΑΣΤ Urban Pub in Xanthi. Beverages, beers, craft beers, whiskeys, rum, gin, vodka, cognac & cocktails.",
+      "Futuristic catalogue for ΜΠΕΛΦΑΣΤ Urban Pub. Payload CMS powered, sqlite locally, static fallback on Vercel.",
     type: "website",
   },
 };
@@ -41,7 +53,7 @@ export default function RootLayout({
   return (
     <html
       lang="el"
-      className={`${playfair.variable} ${cormorant.variable} ${dmSans.variable} h-full antialiased`}
+      className={`${playfair.variable} ${cormorant.variable} ${dmSans.variable} ${jetbrains.variable} ${space.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[var(--cream)]">
         {children}

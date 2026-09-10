@@ -7,6 +7,8 @@
   --green: #163f1a;
   --green-2: #1d4e21;
   --green-light: #2a6b30;
+  --lime: #d9ff66;
+  --lime-2: #e8ff9a;
   --ink: #0f0f0f;
   --muted: #6b6455;
   --line: #1a1a1a;
@@ -19,6 +21,7 @@
   --color-cream-paper: var(--cream-paper);
   --color-green: var(--green);
   --color-green-2: var(--green-2);
+  --color-lime: var(--lime);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
   --color-line: var(--line);
@@ -26,6 +29,8 @@
   --font-sans: var(--font-dm-sans);
   --font-serif: var(--font-playfair);
   --font-display: var(--font-cormorant);
+  --font-mono: var(--font-mono);
+  --font-space: var(--font-space);
 }
 
 * {
@@ -46,11 +51,38 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* hide scrollbar for nav but keep functionality */
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* Futuristic grid */
+.future-grid {
+  background-image:
+    linear-gradient(to right, rgba(22,63,26,0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(22,63,26,0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.glass {
+  background: rgba(255,255,255,0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.glow-lime {
+  box-shadow: 0 0 0 1px rgba(217,255,102,0.5), 0 8px 24px rgba(22,63,26,0.12), 0 0 32px rgba(217,255,102,0.15);
+}
+
+.text-glow {
+  text-shadow: 0 0 20px rgba(217,255,102,0.35);
+}
+
+/* pill shimmer */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
