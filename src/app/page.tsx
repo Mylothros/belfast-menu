@@ -72,14 +72,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[var(--cream)]">
-      {/* Top cream border like PDF */}
-      <div className="h-[14px] w-full bg-[var(--cream)]" />
-
-      {/* HERO — clean, warm, exact PDF cover spirit */}
-      <section className="relative bg-[var(--green)] flex flex-col items-center justify-center px-6 py-16 sm:py-20 lg:py-24">
+      {/* HERO — all green at top, dots restored + rounded bottom */}
+      <section className="relative bg-[var(--green)] flex flex-col items-center justify-center px-6 py-16 sm:py-20 lg:py-24 rounded-b-[28px] sm:rounded-b-[40px] overflow-hidden">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.07]"
+          className="pointer-events-none absolute inset-0 opacity-[0.12]"
           style={{
             backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
             backgroundSize: "22px 22px",
@@ -106,10 +103,10 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="h-[14px] w-full bg-[var(--cream)] border-b border-black/80" />
+      <div className="h-[10px] w-full bg-[var(--cream)]" />
 
-      {/* Sticky catalog bar — elegant */}
-      <div className="sticky top-0 z-30 bg-[var(--cream)]/95 backdrop-blur-md border-b border-black/80">
+      {/* Sticky catalog bar — elegant, rounded */}
+      <div className="sticky top-0 z-30 bg-[var(--cream)]/95 backdrop-blur-md border-b border-black/80 sm:mx-3 sm:rounded-b-2xl sm:border-x sm:shadow-sm">
         <div className="mx-auto max-w-[1160px] px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-3 sm:py-3.5 gap-4">
             <div className="flex items-center gap-3">
@@ -167,7 +164,7 @@ export default function Home() {
         ) : (
           <div className="space-y-10 sm:space-y-12">
             {filtered.map((category, idx) => (
-              <section key={category.id} id={category.id} className="scroll-mt-28">
+              <section key={category.id} id={category.id} className="scroll-mt-28 rounded-2xl bg-white/80 border border-black/5 p-5 sm:p-7 shadow-sm backdrop-blur-sm">
                 <div className="flex items-baseline justify-between gap-4 border-b border-black/10 pb-4 mb-6 sm:mb-8">
                   <div>
                     <div className="flex items-baseline gap-3">
@@ -213,7 +210,7 @@ export default function Home() {
               </section>
             ))}
 
-            <div className="rounded-2xl border border-black/10 bg-white p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="rounded-2xl border border-black/10 bg-white p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
               <div>
                 <p className="text-[11px] tracking-[0.16em] font-semibold text-[var(--green)]">VISIT US</p>
                 <p className="mt-1.5 font-serif text-xl text-black">Βασιλέως Κωνσταντίνου 26, Ξάνθη</p>
@@ -228,7 +225,7 @@ export default function Home() {
         )}
       </main>
 
-      <footer className="mt-6 border-t border-black/80 bg-[var(--cream)]">
+      <footer className="mt-6 border-t border-black/80 bg-[var(--cream)] sm:rounded-t-2xl sm:mx-3 sm:border-x sm:border-t">
         <div className="mx-auto max-w-[1160px] px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 py-5">
             <p className="text-[11px] tracking-[0.14em] font-medium text-black">ΜΠΕΛΦΑΣΤ</p>
