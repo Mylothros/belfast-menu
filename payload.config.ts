@@ -1,71 +1,86 @@
 import { buildConfig } from 'payload'
+import type { CollectionConfig, GlobalConfig } from 'payload'
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import sharp from 'sharp'
+import seedMenu from './src/lib/menu-seed.json'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-// --- Users (required for admin auth) ---
-const Users = {
-  slug: 'users' as const,
+// NOTE: no richtext fields are used anywhere, so no editor is configured.
+// This intentionally avoids @payloadcms/richtext-lexical (top-level-await
+// breaks the payload CLI under tsx on Node 20/22).
+
+export const Users: CollectionConfig = {
+  slug: 'users',
   auth: true,
   admin: { useAsTitle: 'email' },
   access: {
-    admin: ({ req }: { req: any }) => !!req.user,
+    admin: ({ req }) => !!req.user,
   },
   fields: [
-    { name: 'email', type: 'email' as const, required: true, unique: true },
-    { name: 'role', type: 'select' as const, options: ['admin', 'editor'], defaultValue: 'admin' },
+    {
+      name: 'role',
+      type: 'select',
+      options: [
+        { label: 'Admin', value: 'admin' },
+        { label: 'Editor', value: 'editor' },
+      ],
+      defaultValue: 'admin',
+      required: true,
+    },
   ],
 }
 
-// --- Media ---
-const Media = {
-  slug: 'media' as const,
+export const Media: CollectionConfig = {
+  slug: 'media',
   access: { read: () => true },
-  fields: [
-    { name: 'alt', type: 'text' as const },
-  ],
+  fields: [{ name: 'alt', type: 'text' }],
   upload: {
     staticDir: path.resolve(dirname, 'public/media'),
     mimeTypes: ['image/*'],
   },
 }
 
-// --- Catalog Global (all menu data) ---
-const Catalog = {
-  slug: 'catalog' as const,
+export const Catalog: GlobalConfig = {
+  slug: 'catalog',
   label: 'Catalogue',
   access: { read: () => true },
   fields: [
     {
       name: 'categories',
       label: 'Categories',
-      type: 'array' as const,
+      type: 'array',
       labels: { singular: 'Category', plural: 'Categories' },
       admin: { description: 'Drag to reorder. Mirrors the PDF order.' },
       fields: [
-        { name: 'id', label: 'Slug (e.g. beverages)', type: 'text' as const, required: true },
-        { name: 'title', type: 'text' as const, required: true },
-        { name: 'subtitle', type: 'text' as const },
+        { name: 'id', label: 'Slug (e.g. beverages)', type: 'text', required: true },
+        { name: 'title', type: 'text', required: true },
+        { name: 'subtitle', type: 'text' },
         {
           name: 'subcategories',
           label: 'Sub-categories / Groups',
-          type: 'array' as const,
+          type: 'array',
           labels: { singular: 'Group', plural: 'Groups' },
-          admin: { description: 'Use Group label for IRISH / SCOTCH etc. Leave empty for single list.' },
+          admin: {
+            description: 'Use Group label for IRISH / SCOTCH etc. Leave empty for single list.',
+          },
           fields: [
-            { name: 'label', type: 'text' as const, admin: { description: 'e.g. IRISH, SCOTCH, PREMIUM — leave empty for none' } },
+            {
+              name: 'label',
+              type: 'text',
+              admin: { description: 'e.g. IRISH, SCOTCH, PREMIUM — leave empty for none' },
+            },
             {
               name: 'items',
-              type: 'array' as const,
+              type: 'array',
               labels: { singular: 'Item', plural: 'Items' },
               fields: [
-                { name: 'name', type: 'text' as const, required: true },
-                { name: 'price', type: 'text' as const, required: true, admin: { description: 'e.g. 3€ or 3,5€' } },
-                { name: 'note', type: 'text' as const },
+                { name: 'name', type: 'text', required: true },
+                { name: 'price', type: 'text', required: true, admin: { description: 'e.g. 3€ or 3,5€' } },
+                { name: 'note', type: 'text' },
               ],
             },
           ],
@@ -75,26 +90,59 @@ const Catalog = {
   ],
 }
 
-const isVercel = !!process.env.VERCEL
-const databaseUri = process.env.DATABASE_URI || (isVercel ? 'file:/tmp/belfast.db' : 'file:./belfast.db')
+type SeedItem = { name: string; price: string; note?: string | null }
+type SeedSub = { label?: string | null; items: SeedItem[] }
+type SeedCat = {
+  id: string
+  title: string
+  subtitle?: string | null
+  subcategories: SeedSub[]
+}
+const seedCategories = seedMenu as unknown as SeedCat[]
+
+function resolveServerURL(): string {
+  if (process.env.NEXT_PUBLIC_SERVER_URL) return process.env.NEXT_PUBLIC_SERVER_URL
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL)
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  return 'http://localhost:3000'
+}
+
+// DB resolution:
+// - Local dev: file:./belfast.db (sqlite file, zero config)
+// - Vercel without Turso: file:/tmp/belfast.db (ephemeral; CMS falls back to static — see /api/catalog)
+// - Vercel with Turso: libsql remote (persistent CMS). Set TURSO_DATABASE_URL + TURSO_AUTH_TOKEN.
+function resolveDatabaseConfig() {
+  const tursoUrl = process.env.TURSO_DATABASE_URL
+  const tursoToken = process.env.TURSO_AUTH_TOKEN
+  if (tursoUrl && tursoToken) {
+    return { url: tursoUrl, authToken: tursoToken }
+  }
+  if (process.env.DATABASE_URI) return { url: process.env.DATABASE_URI }
+  if (process.env.VERCEL) return { url: 'file:/tmp/belfast.db' }
+  return { url: 'file:./belfast.db' }
+}
+
+const isEphemeralVercelNoTurso =
+  !!process.env.VERCEL && !process.env.TURSO_DATABASE_URL && !process.env.DATABASE_URI
 
 export default buildConfig({
-  serverURL: process.env.NEXT_PUBLIC_SERVER_URL || process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000',
+  serverURL: resolveServerURL(),
   secret: process.env.PAYLOAD_SECRET || 'dev-secret-belfast-32-chars-long-please-change',
-  editor: lexicalEditor({}),
+  sharp,
   admin: {
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
     meta: {
       titleSuffix: '— ΜΠΕΛΦΑΣΤ CMS',
       description: 'Manage the ΜΠΕΛΦΑΣΤ Urban Pub catalogue',
-      icons: [],
     },
   },
   db: sqliteAdapter({
-    client: { url: databaseUri },
-    // allow pushes in dev, migrations handle prod
-    push: !isVercel,
+    client: resolveDatabaseConfig(),
+    migrationDir: path.resolve(dirname, 'src/migrations'),
+    // push only for local prototyping; Vercel + prod must use migrations
+    push: !process.env.VERCEL && process.env.NODE_ENV !== 'production',
   }),
   collections: [Users, Media],
   globals: [Catalog],
@@ -102,48 +150,50 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   graphQL: { schemaOutputFile: path.resolve(dirname, 'generated-schema.graphql') },
-  cors: ['http://localhost:3000', 'https://*.vercel.app'].filter(Boolean) as any,
-  csrf: ['http://localhost:3000', 'https://*.vercel.app'].filter(Boolean) as any,
   onInit: async (payload) => {
     try {
-      // seed on first run if catalog empty
-      const existing = await payload.findGlobal({ slug: 'catalog' as any })
-      const hasCategories = (existing as any)?.categories?.length > 0
+      // Skip seeding on ephemeral Vercel (no persistent DB) — frontend uses static fallback.
+      if (isEphemeralVercelNoTurso) {
+        payload.logger.info('Skipping seed: ephemeral Vercel without Turso/DATABASE_URI')
+        return
+      }
+      const existing = await payload.findGlobal({ slug: 'catalog' })
+      const existingCategories = (existing as unknown as { categories?: unknown[] })
+        ?.categories
+      const hasCategories = (existingCategories?.length ?? 0) > 0
       if (!hasCategories) {
-        const { staticMenu } = await import('./src/lib/menu-data')
         await payload.updateGlobal({
-          slug: 'catalog' as any,
+          slug: 'catalog',
           data: {
-            categories: staticMenu.map((cat) => ({
+            categories: seedCategories.map((cat) => ({
               id: cat.id,
               title: cat.title,
-              subtitle: cat.subtitle,
+              subtitle: cat.subtitle ?? undefined,
               subcategories: cat.subcategories.map((sub) => ({
-                label: sub.label,
+                label: sub.label ?? undefined,
                 items: sub.items.map((it) => ({
                   name: it.name,
                   price: it.price,
-                  note: it.note,
+                  note: it.note ?? undefined,
                 })),
               })),
             })),
-          } as any,
+          },
         })
         payload.logger.info('Seeded catalog global from staticMenu')
       }
-      // ensure admin user exists in dev
-      if (!isVercel) {
+      if (!process.env.VERCEL) {
         const users = await payload.find({ collection: 'users', limit: 1 })
         if (users.totalDocs === 0) {
           await payload.create({
             collection: 'users',
             data: {
-              email: 'admin@belfast.pub',
-              password: 'admin123',
+              email: process.env.PAYLOAD_FIRST_USER_EMAIL || 'admin@belfast.pub',
+              password: process.env.PAYLOAD_FIRST_USER_PASSWORD || 'admin123',
               role: 'admin',
             },
           })
-          payload.logger.info('Created default admin: admin@belfast.pub / admin123')
+          payload.logger.info('Created default admin user (change password after first login)')
         }
       }
     } catch (err) {

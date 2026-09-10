@@ -3,8 +3,10 @@
 Beautiful catalogue site for **ΜΠΕΛΦΑΣΤ Urban Pub** — Βασιλέως Κωνσταντίνου 26, Ξάνθη.
 
 Recreated faithfully from the original PDF catalogue into a modern, responsive Next.js site.
+The entire menu is **managed in Payload CMS** (sqlite locally) and served dynamically —
+with a graceful static fallback on Vercel where no database is configured.
 
-**Live:** `bun dev` → http://localhost:3000
+**Live:** `bun dev` → http://localhost:3000 · CMS → http://localhost:3000/admin
 
 ## Stack
 
@@ -12,7 +14,8 @@ Recreated faithfully from the original PDF catalogue into a modern, responsive N
 - React 19
 - Tailwind CSS v4
 - TypeScript
-- Bun
+- Payload CMS 3 + sqlite (libSQL) locally
+- Bun (local dev) / npm (Vercel builds)
 
 ## Catalogue
 
@@ -41,33 +44,41 @@ Design tokens match the PDF:
 # install
 bun install
 
-# dev (Turbopack)
+# dev (Turbopack) — Payload auto-seeds catalog + default admin on first boot
 bun dev
+
+# open the CMS
+open http://localhost:3000/admin
+# default admin: admin@belfast.pub / admin123 (change after first login)
 
 # build
 bun run build
-
-# start production
-bun start
 
 # lint
 bun run lint
 ```
 
-## Project structure
+## Payload CMS
 
-```
-src/app/
-  layout.tsx   — fonts (Playfair, Cormorant, DM Sans) + metadata
-  page.tsx     — full menu data + hero + sticky nav + search + sections
-  globals.css  — Tailwind + design tokens
-```
+- **Local:** sqlite file `./belfast.db` (zero config). First boot runs migrations,
+  seeds the `catalog` global from `src/lib/menu-seed.json`, and creates the default
+  admin user. Edit everything at `/admin` (categories → groups → items, drag to reorder).
+- **Public callback:** `GET /api/catalog` returns `{ source: 'payload', categories }`
+  when the DB is live — the homepage loads its menu from there, so CMS edits appear instantly.
+- **Single source of truth:** `src/lib/menu-seed.json` feeds both the Payload seed and
+  the static fallback (`src/lib/menu-data.ts`). Prices/names edited in the CMS override it at runtime.
+- **Useful scripts:** `bun run migrate` · `bun run migrate:create` · `bun run migrate:status` ·
+  `bun run generate:types` · `bun run generate:importmap`
+- Never commit `*.db` (gitignored). **Do** commit `src/migrations/` + `payload-types.ts`.
 
-## Deploy to Vercel
+## Deploy to Vercel (no database — static fallback kept)
 
-**One-click:** Import `RemiZlatinis/belfast-menu` at https://vercel.com/new — framework auto-detected as **Next.js**. No env vars needed.
+Import `RemiZlatinis/belfast-menu` at https://vercel.com/new — framework auto-detected as
+**Next.js**. No env vars needed: without a persistent DB, `/api/catalog` gracefully serves
+the static catalogue and the site works fully (CMS editing happens locally).
 
-`vercel.json` forces `npm install` + `npm run build` (avoids Bun 1.3.14 SIGILL on Vercel) while keeping `bun` for local dev. Both `bun.lock` and `package-lock.json` are committed.
+`vercel.json` forces `npm install` + `npm run build` while keeping `bun` for local dev.
+Both `bun.lock` and `package-lock.json` are committed.
 
 ```bash
 # Vercel CLI
@@ -78,7 +89,24 @@ vercel --prod
 git push origin main
 ```
 
-Build verified: `npm run build` exits 0 with Node 22, `bun run build` compiles (Bun 1.3.14 has a post-build SIGILL that Vercel avoids via npm).
+Optional (persistent CMS on Vercel via Turso free tier): set `TURSO_DATABASE_URL`,
+`TURSO_AUTH_TOKEN`, `PAYLOAD_SECRET`, `NEXT_PUBLIC_SERVER_URL` in Vercel env — the app
+automatically switches `/api/catalog` and `/admin` to the live database.
+
+## Project structure
+
+```
+payload.config.ts        — Payload (users, media, catalog global, sqlite/Turso, seed)
+src/migrations/          — committed DB migrations
+src/lib/menu-seed.json   — seed + static fallback source of truth
+src/lib/menu-data.ts     — typed re-export for the frontend
+src/lib/payload.ts       — cached Payload accessor with Vercel no-DB guard
+src/app/
+  layout.tsx             — fonts (Playfair, Cormorant, DM Sans) + metadata
+  page.tsx               — hero + sticky nav + search + sections (loads /api/catalog)
+  api/catalog/route.ts   — public callback: payload when live, static fallback on Vercel
+  (payload)/             — official Payload routes (admin, api, layout, importMap)
+```
 
 ## Address
 

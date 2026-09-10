@@ -34,13 +34,12 @@ yarn-error.log*
 .env*
 !.env.example
 
-# payload / sqlite
+# payload / sqlite (local dev database is never committed)
 *.db
 *.db-journal
-belfast.db
-payload-types.ts
-generated-schema.graphql
-migrations/
+*.db-wal
+*.db-shm
+# NOTE: src/migrations + payload-types.ts ARE committed (needed for fresh clones + Vercel)
 
 # vercel
 .vercel

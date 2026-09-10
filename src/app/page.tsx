@@ -6,6 +6,16 @@ import type { Category } from "@/lib/menu-data";
 
 const navItems = staticMenu.map((c) => ({ id: c.id, label: c.title }));
 
+// Loose DTO for /api/catalog payload rows (DB returns null for empty optionals)
+type CatalogItemDTO = { name: string; price: string; note?: string | null }
+type CatalogSubDTO = { label?: string | null; items?: CatalogItemDTO[] | null }
+type CatalogCategoryDTO = {
+  id: string
+  title: string
+  subtitle?: string | null
+  subcategories?: CatalogSubDTO[] | null
+}
+
 export default function Home() {
   const [query, setQuery] = useState("");
   const [activeId, setActiveId] = useState("beverages");
@@ -17,14 +27,18 @@ export default function Home() {
       .then((r) => r.json())
       .then((data) => {
         if (data?.categories?.length) {
-          const normalized: Category[] = data.categories.map((c: any) => ({
+          const normalized: Category[] = (data.categories as CatalogCategoryDTO[]).map((c) => ({
             id: c.id,
             title: c.title,
-            subtitle: c.subtitle,
-            count: (c.subcategories || []).reduce((acc: number, s: any) => acc + (s.items?.length || 0), 0),
-            subcategories: (c.subcategories || []).map((s: any) => ({
+            subtitle: c.subtitle ?? undefined,
+            count: (c.subcategories || []).reduce((acc, s) => acc + (s.items?.length || 0), 0),
+            subcategories: (c.subcategories || []).map((s) => ({
               label: s.label || undefined,
-              items: (s.items || []).map((it: any) => ({ name: it.name, price: it.price, note: it.note || undefined })),
+              items: (s.items || []).map((it) => ({
+                name: it.name,
+                price: it.price,
+                note: it.note || undefined,
+              })),
             })),
           }));
           setMenu(normalized);
