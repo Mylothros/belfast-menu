@@ -63,13 +63,22 @@ src/app/
   globals.css  — Tailwind + design tokens
 ```
 
-## Deploy
+## Deploy to Vercel
 
-Push to `main` — Vercel auto-deploys. Or:
+**One-click:** Import `RemiZlatinis/belfast-menu` at https://vercel.com/new — framework auto-detected as **Next.js**. No env vars needed.
+
+`vercel.json` forces `npm install` + `npm run build` (avoids Bun 1.3.14 SIGILL on Vercel) while keeping `bun` for local dev. Both `bun.lock` and `package-lock.json` are committed.
 
 ```bash
+# Vercel CLI
+npm i -g vercel
 vercel --prod
+
+# or push to main — Vercel auto-deploys
+git push origin main
 ```
+
+Build verified: `npm run build` exits 0 with Node 22, `bun run build` compiles (Bun 1.3.14 has a post-build SIGILL that Vercel avoids via npm).
 
 ## Address
 
